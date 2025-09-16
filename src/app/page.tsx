@@ -1,103 +1,381 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import EnhancedCodeViewer from "./enhanced-code-viewer";
+import { Project, projects, TerminalLine, commands } from "./constant/projects";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function CLIPortfolio() {
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const [history, setHistory] = useState<TerminalLine[]>([]);
+  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
+  const [currentInput, setCurrentInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [viewMode, setViewMode] = useState<"terminal" | "split" | "code">(
+    "terminal"
+  );
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const welcomeMessage = [
+      "Welcome to my CLI Portfolio! 🚀",
+      "",
+      "Type 'help' to see available commands.",
+      "",
+    ];
+
+    setHistory(
+      welcomeMessage.map((content) => ({
+        type: "output" as const,
+        content,
+        timestamp: new Date(),
+      }))
+    );
+  }, []);
+
+  useEffect(() => {
+    if (inputRef.current && viewMode !== "code") {
+      inputRef.current.focus();
+    }
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [history, viewMode]);
+
+  const executeCommand = async (cmd: string) => {
+    const trimmedCmd = cmd.trim().toLowerCase();
+    const [command, ...args] = trimmedCmd.split(" ");
+
+    setHistory((prev) => [
+      ...prev,
+      {
+        type: "command",
+        content: `$ ${cmd}`,
+        timestamp: new Date(),
+      },
+    ]);
+
+    if (command === "clear") {
+      setHistory([]);
+      return;
+    }
+
+    if (command === "") return;
+
+    const commandAction = commands[command as keyof typeof commands];
+
+    if (commandAction) {
+      setIsTyping(true);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const output = commandAction.action();
+      setHistory((prev) => [
+        ...prev,
+        ...output.map((content) => ({
+          type: "output" as const,
+          content,
+          timestamp: new Date(),
+        })),
+      ]);
+
+      setIsTyping(false);
+    } else if (command === "code" && args.length > 0) {
+      const projectId = args[0];
+      const project = projects.find(
+        (p) => p.id.toLowerCase() === projectId.toLowerCase()
+      );
+
+      if (project) {
+        setSelectedProject(project);
+        setViewMode("code");
+        setHistory((prev) => [
+          ...prev,
+          {
+            type: "success",
+            content: `🚀 Opening ${project.name} in integrated code viewer...`,
+            timestamp: new Date(),
+          },
+          {
+            type: "output",
+            content:
+              "💡 Use the view controls to switch between terminal and code!",
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      } else {
+        setHistory((prev) => [
+          ...prev,
+          {
+            type: "error",
+            content: `Project '${projectId}' not found. Available: ${projects
+              .map((p) => p.id)
+              .join(", ")}`,
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
+    } else if (command === "browse") {
+      if (args.length > 0) {
+        const projectId = args[0];
+        const project = projects.find(
+          (p) => p.id.toLowerCase() === projectId.toLowerCase()
+        );
+
+        if (project) {
+          setHistory((prev) => [
+            ...prev,
+            {
+              type: "output",
+              content: `🚀 Opening ${project.name} externally...`,
+              timestamp: new Date(),
+            },
+            {
+              type: "success",
+              content: "🔓 Launching GitHub1s (no login required)...",
+              timestamp: new Date(),
+            },
+          ]);
+
+          setTimeout(() => {
+            window.open(project.github1sUrl, "_blank");
+          }, 1000);
+
+          return;
+        } else {
+          setHistory((prev) => [
+            ...prev,
+            {
+              type: "error",
+              content: `Project '${projectId}' not found. Available: ${projects
+                .map((p) => p.id)
+                .join(", ")}`,
+              timestamp: new Date(),
+            },
+          ]);
+          return;
+        }
+      } else {
+        setIsTyping(true);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const output = [
+          "Usage: browse <project-id> (external) or code <project-id> (integrated)",
+          "",
+          "Available projects:",
+          ...projects.map((p) => `• ${p.id} - ${p.name}`),
+          "",
+          `Example: code ${projects[0]?.id || "instantshare"} (integrated)`,
+          `Example: browse ${projects[0]?.id || "instantshare"} (external)`,
+        ];
+
+        setHistory((prev) => [
+          ...prev,
+          ...output.map((content) => ({
+            type: "output" as const,
+            content,
+            timestamp: new Date(),
+          })),
+        ]);
+
+        setIsTyping(false);
+        return;
+      }
+    } else {
+      setHistory((prev) => [
+        ...prev,
+        {
+          type: "error",
+          content: `Command not found: ${trimmedCmd}. Type 'help' for available commands.`,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      executeCommand(currentInput);
+      if (cmdHistory.includes(currentInput) === false) {
+        setCmdHistory((prev) => [...prev, currentInput]);
+      }
+      setCurrentInput("");
+      setHistoryIndex(null);
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const availableCommands = Object.keys(commands);
+      const matches = availableCommands.filter((cmd) =>
+        cmd.startsWith(currentInput.toLowerCase())
+      );
+      if (matches.length === 1) {
+        setCurrentInput(matches[0]);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (cmdHistory.length > 0) {
+        setHistoryIndex((prevIndex) => {
+          const newIndex =
+            prevIndex === null
+              ? cmdHistory.length - 1
+              : Math.max(prevIndex - 1, 0);
+          setCurrentInput(cmdHistory[newIndex]);
+          return newIndex;
+        });
+      }
+      console.log("previous commands: ", cmdHistory);
+      setCurrentInput(cmdHistory[cmdHistory.length - 1]);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (historyIndex !== null) {
+        setHistoryIndex((prevIndex) => {
+          const safePrevIndex = prevIndex !== null ? prevIndex : 0;
+          const newIndex = Math.min(safePrevIndex + 1, cmdHistory.length - 1);
+          setCurrentInput(cmdHistory[newIndex]);
+          return newIndex;
+        });
+      }
+    }
+  };
+
+  const renderTerminal = () => (
+    <Card className="bg-gray-900 border-gray-700 shadow-2xl h-full">
+      <div className="p-6 h-full flex flex-col">
+        {/* Terminal Header */}
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-700">
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          </div>
+          <span className="ml-4 text-gray-400">portfolio@terminal:~$</span>
+          <span className="ml-auto text-xs text-green-500">
+            🔓 No Login Required
+          </span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        {/* Terminal Content */}
+        <div
+          ref={terminalRef}
+          className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mb-4"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {history.map((line, index) => (
+            <div key={index} className="mb-1">
+              <span
+                className={`${
+                  line.type === "command"
+                    ? "text-cyan-400"
+                    : line.type === "error"
+                    ? "text-red-400"
+                    : line.type === "success"
+                    ? "text-lime-400"
+                    : "text-green-400"
+                }`}
+              >
+                {line.content}
+              </span>
+            </div>
+          ))}
+
+          {isTyping && (
+            <div className="text-yellow-400">
+              <span className="animate-pulse">Typing...</span>
+            </div>
+          )}
+
+          {/* Current Input Line */}
+          <div className="flex items-center mt-2">
+            <span className="text-cyan-400 mr-2">$</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="bg-transparent border-none outline-none text-green-400 flex-1 font-mono"
+              placeholder="Type a command..."
+              disabled={isTyping}
+            />
+            <span className="animate-pulse text-green-400">|</span>
+          </div>
+        </div>
+
+        {/* Command Suggestions */}
+        <div className="pt-4 border-t border-gray-700">
+          <div className="text-gray-500 text-sm">
+            Quick commands:{" "}
+            {Object.keys(commands).map((cmd, index) => (
+              <span key={cmd}>
+                <button
+                  onClick={() => setCurrentInput(cmd)}
+                  className="text-cyan-400 hover:text-cyan-300 underline"
+                >
+                  {cmd}
+                </button>
+                {index < Object.keys(commands).length - 1 && " • "}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-black text-green-400 p-4 font-mono">
+      {/* View Mode Controls */}
+      {selectedProject && (
+        <div className="max-w-7xl mx-auto mb-4">
+          <div className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-300">
+                Viewing: {selectedProject.name}
+              </span>
+            </div>
+            <Button
+              onClick={() => {
+                setSelectedProject(null);
+                setViewMode("terminal");
+              }}
+              variant="ghost"
+              size="sm"
+              className="text-red-400 hover:text-red-300"
+            >
+              Close Project
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        {/* {viewMode === "terminal" && (
+          <div className="max-w-4xl mx-auto">{renderTerminal()}</div>
+        )} */}
+
+        {/* {viewMode === "split" && selectedProject && (
+          <div className="grid grid-cols-2 gap-4 h-[calc(100vh-140px)]">
+            <div>{renderTerminal()}</div>
+            <div>
+              <EnhancedCodeViewer project={selectedProject} />
+            </div>
+          </div>
+        )} */}
+
+        {viewMode === "code" && selectedProject && (
+          <div className="h-[calc(100vh-140px)]">
+            <EnhancedCodeViewer project={selectedProject} />
+          </div>
+        )}
+
+        {!selectedProject && viewMode == "terminal" && (
+          <div className="max-w-4xl mx-auto">{renderTerminal()}</div>
+        )}
+      </div>
     </div>
   );
 }
