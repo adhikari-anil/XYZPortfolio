@@ -313,6 +313,7 @@ export default function CLIPortfolio() {
                 <button
                   onClick={() => setCurrentInput(cmd)}
                   className="text-cyan-400 hover:text-cyan-300 underline"
+                  id={cmd}
                 >
                   {cmd}
                 </button>
