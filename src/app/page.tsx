@@ -20,6 +20,8 @@ export default function CLIPortfolio() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
+  console.log("History check: ", history);
+
   useEffect(() => {
     const welcomeMessage = [
       "Welcome to my CLI Portfolio! 🚀",
@@ -198,6 +200,29 @@ export default function CLIPortfolio() {
     }
   };
 
+  function renderLineContent(content: string) {
+    if (/^(GitHub|LinkedIn|Twitter):/.test(content)) {
+      const label = content.split(":")[0];
+      const link = content.split(":")[1].trim();
+
+      return (
+        <div className="flex gap-2">
+          <p>{label}:</p>
+          <a
+            href={`https://${link}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 underline hover:text-blue-300"
+          >
+            {link}
+          </a>
+        </div>
+      );
+    }
+
+    return content;
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       executeCommand(currentInput);
@@ -276,7 +301,7 @@ export default function CLIPortfolio() {
                     : "text-green-400"
                 }`}
               >
-                {line.content}
+                {renderLineContent(line.content)}
               </span>
             </div>
           ))}
@@ -288,7 +313,7 @@ export default function CLIPortfolio() {
           )}
 
           {/* Current Input Line */}
-          <div className="flex items-center mt-2">
+          <div className="flex items-center mt-2" id="direct">
             <span className="text-cyan-400 mr-2">$</span>
             <input
               ref={inputRef}
@@ -354,19 +379,6 @@ export default function CLIPortfolio() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto">
-        {/* {viewMode === "terminal" && (
-          <div className="max-w-4xl mx-auto">{renderTerminal()}</div>
-        )} */}
-
-        {/* {viewMode === "split" && selectedProject && (
-          <div className="grid grid-cols-2 gap-4 h-[calc(100vh-140px)]">
-            <div>{renderTerminal()}</div>
-            <div>
-              <EnhancedCodeViewer project={selectedProject} />
-            </div>
-          </div>
-        )} */}
-
         {viewMode === "code" && selectedProject && (
           <div className="h-[calc(100vh-140px)]">
             <EnhancedCodeViewer project={selectedProject} />

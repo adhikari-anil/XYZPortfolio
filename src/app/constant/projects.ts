@@ -32,7 +32,7 @@ export const projects: Project[] = [
     repo: "InstantShare",
   },
   {
-    id: "Tracking System",
+    id: "trackingsystem",
     name: "Location tracking Platform",
     description: "A simple tracking system.",
     tech: ["Nodejs", "HTML", "CSS"],
@@ -88,7 +88,7 @@ export const commands = {
       "  code       - Open integrated code viewer",
       "  browse     - Browse code externally (GitHub1s)",
       "",
-      "💡 Try 'code <project-id>' for integrated VS Code experience!",
+      "💡 Try 'code <project-id>' for integrated VS Code experience and Live Link!",
     ],
   },
   about: {
@@ -135,7 +135,7 @@ export const commands = {
         `   • Commands: 'code ${project.id}' (integrated) or 'browse ${project.id}' (external)`,
         "",
       ]),
-      "💡 Use 'code <project-id>' for integrated VS Code experience!",
+      "💡 Use 'code <project-id>' for integrated VS Code experience and Live Link!",
     ],
   },
   listproject: {
@@ -147,7 +147,7 @@ export const commands = {
         `${index + 1}. ${project.name}`,
         `   • ID: ${project.id}`,
       ]),
-      "💡 Use 'code <project-id>' for integrated VS Code experience!",
+      "💡 Use 'code <project-id>' for integrated VS Code experience and Live Link!",
     ],
   },
   contact: {
@@ -157,8 +157,8 @@ export const commands = {
       "",
       "Email: adhikarianil719@gmail.com",
       "GitHub: github.com/adhikari-anil",
-      "LinkedIn: https://www.linkedin.com/in/anil-adhikari-833973298/",
-      "Twitter: @AnilAdh25412744",
+      "LinkedIn: www.linkedin.com/in/anil-adhikari-833973298/",
+      "Twitter: x.com/AnilAdh25412744",
       "",
       "Feel free to reach out! 👋",
     ],

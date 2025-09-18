@@ -5,7 +5,7 @@ export const steps = [
     selector: "#help",
     content: (
       <div className="flex flex-col gap-2">
-        <p> This will guide you available commands ! </p>
+        <p className="font-bold"> This will guide you available commands ! </p>
         <Image src={"/helpDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
@@ -14,7 +14,7 @@ export const steps = [
     selector: "#about",
     content: (
       <div className="flex flex-col gap-2">
-        <p> Important Information about me ! </p>
+        <p className="font-bold"> Information about me ! </p>
         <Image src={"/aboutDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
@@ -23,7 +23,7 @@ export const steps = [
     selector: "#skills",
     content: (
       <div className="flex flex-col gap-2">
-        <p> Skills I have and I can work on them. </p>
+        <p className="font-bold"> Skills I have and I can work on them. </p>
         <Image src={"/skillsDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
@@ -32,7 +32,7 @@ export const steps = [
     selector: "#projects",
     content: (
       <div className="flex flex-col gap-2">
-        <p> Projects and their Details </p>
+        <p className="font-bold"> Projects and their Details </p>
         <Image src={"/projectDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
@@ -41,8 +41,28 @@ export const steps = [
     selector: "#listproject",
     content: (
       <div className="flex flex-col gap-2">
-        <p> Get projects ids and see its code and live link. </p>
-        <Image src={"/listDemo.png"} alt="hello" height={400} width={800} />
+        <p className="font-bold">
+          {" "}
+          Get projects ids and see its code and live link.{" "}
+        </p>
+        <Image src={"/listprojectDemo.png"} alt="hello" height={400} width={800} />
+      </div>
+    ),
+  },
+  {
+    selector: "#direct",
+    content: (
+      <div className="flex flex-col gap-2">
+        <p className="font-bold">
+          {" "}
+          Type code {"<projectId>"} and get Direct code and live link.
+        </p>
+        <Image
+          src={"/code-livelink.png"}
+          alt="hello"
+          height={400}
+          width={800}
+        />
       </div>
     ),
   },
@@ -50,7 +70,7 @@ export const steps = [
     selector: "#contact",
     content: (
       <div className="flex flex-col gap-2">
-        <p> Contact Me! </p>
+        <p className="font-bold"> Contact Me! </p>
         <Image src={"/contactDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
@@ -59,7 +79,7 @@ export const steps = [
     selector: "#clear",
     content: (
       <div className="flex flex-col gap-2">
-        <p>Clear all the content for terminal</p>
+        <p className="font-bold">Clear all the content for terminal</p>
         <Image src={"/clearDemo.png"} alt="hello" height={400} width={800} />
       </div>
     ),
