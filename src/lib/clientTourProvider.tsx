@@ -39,9 +39,12 @@ export default function ClientTourProvider({
           maxWidth: "700px",
           padding: "20px",
           borderRadius: "12px",
+          position: "fixed",
+          top: "55%", // a bit below the vertical center (50% = exact center)
+          left: "50%", // center horizontally
+          transform: "translate(-50%, -50%)", // re-center based on width/height
         }),
       }}
-      position={"center"}
     >
       <TourController>{children}</TourController>
     </TourProvider>
